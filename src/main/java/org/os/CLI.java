@@ -4,11 +4,18 @@ import java.io.File;
 import java.util.Scanner;
 import org.os.commands.MkdirCommand;
 import org.os.commands.RmdirCommand;
+import org.os.commands.AppendCommand;
+
+import org.os.commands.OverwriteCommand;
+
 public class CLI {
 
     private static Scanner scanner = new Scanner(System.in);
     private static MkdirCommand mkdirCommand = new MkdirCommand();
     private static RmdirCommand rmdirCommand = new RmdirCommand();
+    private static OverwriteCommand overwriteCommand = new OverwriteCommand();
+    private static AppendCommand appendCommand = new AppendCommand();
+
 
     // Entry point
     public static void main(String[] args) {
@@ -28,41 +35,86 @@ public class CLI {
         }
     }
 
-    // Method to process the command
     private static void processCommand(String command) {
-        String[] parts = command.split(" ");
-        String mainCommand = parts[0].toLowerCase();
 
-        switch (mainCommand) {
-            case "help":
-                displayHelp();
-                break;
-            case "mkdir":
-                if (parts.length < 2) {
-                    System.out.println("Error: mkdir requires a directory name.");
+        // Check if the command starts with 'echo '
+        if (command.startsWith("echo "))
+        {
+            String commandWithoutEcho = command.substring(5).trim(); // Remove 'echo ' and trim spaces
+
+            //======================== Overwrite Command '>' =======================
+
+            if (commandWithoutEcho.contains(" > ")) {
+                String[] outputAndFile = commandWithoutEcho.split(" > ", 2);
+                if (outputAndFile.length == 2) {
+                    String output = outputAndFile[0].trim();    // The text to write
+                    String filename = outputAndFile[1].trim();  // The filename to write into
+                    String result = overwriteCommand.execute(new String[]{output, filename});
+                    System.out.println(result);
                 } else {
-                    mkdirCommand.execute(parts[1]);
+                    System.out.println("Error: Incorrect format. Use 'echo <output> > <filename>'.");
                 }
-                break;
-            case "rmdir":
-                if (parts.length < 2) {
-                    System.out.println("Error: rmdir requires a directory name.");
+            }
+            //======================== Append Command '>>' =======================
+
+            else if (commandWithoutEcho.contains(" >> "))
+            {
+                String[] outputAndFile = commandWithoutEcho.split(" >> ", 2);
+                if (outputAndFile.length == 2) {
+                    String output = outputAndFile[0].trim();    // The text to append
+                    String filename = outputAndFile[1].trim();  // The filename to append into
+                    String result = appendCommand.execute(new String[]{output, filename});
+                    System.out.println(result);
                 } else {
-                    rmdirCommand.execute(parts[1]);
+                    System.out.println("Error: Incorrect format. Use 'echo <output> >> <filename>'.");
                 }
-                break;
-            default:
-                System.out.println("Error: Command not recognized.");
+            }
+            else
+            {
+                System.out.println("Error: Command should include '>' or '>>' for file output.");
+            }
+        }
+        //========================= Other Commands ==========================
+        else
+        {
+            // Handle other commands
+            String[] parts = command.split(" ");
+            String mainCommand = parts[0].toLowerCase();
+
+            switch (mainCommand) {
+                case "help":
+                    displayHelp();
+                    break;
+                case "mkdir":
+                    if (parts.length < 2) {
+                        System.out.println("Error: mkdir requires a directory name.");
+                    } else {
+                        mkdirCommand.execute(parts[1]);
+                    }
+                    break;
+                case "rmdir":
+                    if (parts.length < 2) {
+                        System.out.println("Error: rmdir requires a directory name.");
+                    } else {
+                        rmdirCommand.execute(parts[1]);
+                    }
+                    break;
+                default:
+                    System.out.println("Error: Command not recognized.");
+            }
         }
     }
+
 
     // Method to display available commands
     private static void displayHelp() {
         System.out.println("Available commands:");
-        System.out.println("help            - Show available commands.");
-        System.out.println("mkdir <name>    - Create a new directory.");
-        System.out.println("rmdir <name>    - Remove an existing directory.");
-        System.out.println("exit            - Exit the CLI.");
+        System.out.println("help                          - Show available commands.");
+        System.out.println("mkdir <name>                  - Create a new directory.");
+        System.out.println("rmdir <name>                  - Remove an existing directory.");
+        System.out.println("echo <output> > <filename>    - Overwriting a file.");
+        System.out.println("echo <output> >> <filename>   - Appending to a file.");
+        System.out.println("exit                          - Exit the CLI.");
     }
 
     // Method to create a directory
