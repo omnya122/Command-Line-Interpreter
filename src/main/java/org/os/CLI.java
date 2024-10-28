@@ -1,14 +1,20 @@
 package org.os;
+import java.io.IOException;
 
 import java.io.File;
 import java.util.Scanner;
-import org.os.commands.MkdirCommand;
-import org.os.commands.RmdirCommand;
+
+import org.os.commands.*;
+
 public class CLI {
 
     private static Scanner scanner = new Scanner(System.in);
     private static MkdirCommand mkdirCommand = new MkdirCommand();
     private static RmdirCommand rmdirCommand = new RmdirCommand();
+    private static TouchCommand touchCommand = new TouchCommand();
+    private  static RmCommand rmCommand = new RmCommand();
+    private static MvCommand mvCommand = new MvCommand();
+    private static CatCommand catCommand = new CatCommand();
 
     // Entry point
     public static void main(String[] args) {
@@ -51,6 +57,36 @@ public class CLI {
                     rmdirCommand.execute(parts[1]);
                 }
                 break;
+
+            case "touch":
+                if (parts.length < 2) {
+                    System.out.println("Error: touch requires a file name.");
+                } else {
+                    touchCommand.touch(parts[1]);
+                }
+                break;
+            case "rm":
+                if (parts.length < 2) {
+                    System.out.println("Error: rm requires a file name.");
+                } else {
+                    rmCommand.delete(parts[1]);
+                }
+                break;
+            case "mv":
+                if (parts.length < 3) {
+                    System.out.println("Error: mv requires a source and a destination path.");
+                } else {
+                    try {
+                        mvCommand.move(parts[1], parts[2]);
+                    } catch (IOException e) {
+                        System.out.println("Error during move operation: " + e.getMessage());
+                    }
+                }
+                break;
+            case "cat":
+                handleCatCommand(parts);
+                break;
+
             default:
                 System.out.println("Error: Command not recognized.");
         }
@@ -61,35 +97,26 @@ public class CLI {
         System.out.println("Available commands:");
         System.out.println("help            - Show available commands.");
         System.out.println("mkdir <name>    - Create a new directory.");
-        System.out.println("rmdir <name>    - Remove an existing directory.");
+        System.out.println("rmdir <name>    - Removes an empty existing directory.");
+        System.out.println("touch <name>    - adds a new file if it doesnot exist and update  a file's timestamp if it exists.");
+        System.out.println("rm <name>       - removes an existing file.");
+        System.out.println("mv <source> <destination> - Moves a file or directory from source to destination. "
+                + "If source and destination are in the same directory, it renames the file or directory.");
+        System.out.println("cat <file1 name><file2 name> ... - If filenames are provided, it will display the content of those files.\n" +
+                "If no filenames are provided, it will accept input from the user and echo it back until the user enters Ctrl+D (EOF signal)..");
         System.out.println("exit            - Exit the CLI.");
     }
-
-    // Method to create a directory
-    private static void createDirectory(String dirName) {
-        File directory = new File(dirName);
-        if (directory.exists()) {
-            System.out.println("Error: Directory already exists.");
-        } else if (directory.mkdir()) {
-            System.out.println("Directory '" + dirName + "' created successfully.");
+    // Method to handle the 'cat' command specifically
+    private static void handleCatCommand(String[] parts) {
+        if (parts.length == 1) {
+            // No file names provided, switch to user input mode
+            catCommand.execute(new String[0]);
         } else {
-            System.out.println("Error: Failed to create the directory.");
+            // Extract file names from parts and pass them to the catCommand
+            String[] filenames = new String[parts.length - 1];
+            System.arraycopy(parts, 1, filenames, 0, parts.length - 1);
+            catCommand.execute(filenames);
         }
     }
 
-    // Method to remove a directory
-    private static void removeDirectory(String dirName) {
-        File directory = new File(dirName);
-        if (!directory.exists()) {
-            System.out.println("Error: Directory does not exist.");
-        } else if (directory.isDirectory() && directory.list().length == 0) {
-            if (directory.delete()) {
-                System.out.println("Directory '" + dirName + "' removed successfully.");
-            } else {
-                System.out.println("Error: Failed to remove the directory.");
-            }
-        } else {
-            System.out.println("Error: Directory is either not empty or is not a directory.");
-        }
-    }
 }
