@@ -15,6 +15,8 @@ public class CLI {
     private  static RmCommand rmCommand = new RmCommand();
     private static MvCommand mvCommand = new MvCommand();
     private static CatCommand catCommand = new CatCommand();
+    private static OverwriteCommand overwriteCommand = new OverwriteCommand();
+    private static AppendCommand appendCommand = new AppendCommand();
 
     // Entry point
     public static void main(String[] args) {
@@ -36,61 +38,103 @@ public class CLI {
 
     // Method to process the command
     private static void processCommand(String command) {
-        String[] parts = command.split(" ");
-        String mainCommand = parts[0].toLowerCase();
+        // Check if the command starts with 'echo '
+        if (command.startsWith("echo "))
+        {
+            String commandWithoutEcho = command.substring(5).trim(); // Remove 'echo ' and trim spaces
 
-        switch (mainCommand) {
-            case "help":
-                displayHelp();
-                break;
-            case "mkdir":
-                if (parts.length < 2) {
-                    System.out.println("Error: mkdir requires a directory name.");
-                } else {
-                    mkdirCommand.execute(parts[1]);
-                }
-                break;
-            case "rmdir":
-                if (parts.length < 2) {
-                    System.out.println("Error: rmdir requires a directory name.");
-                } else {
-                    rmdirCommand.execute(parts[1]);
-                }
-                break;
+            //======================== Overwrite Command '>' =======================
 
-            case "touch":
-                if (parts.length < 2) {
-                    System.out.println("Error: touch requires a file name.");
+            if (commandWithoutEcho.contains(" > ")) {
+                String[] outputAndFile = commandWithoutEcho.split(" > ", 2);
+                if (outputAndFile.length == 2) {
+                    String output = outputAndFile[0].trim();    // The text to write
+                    String filename = outputAndFile[1].trim();  // The filename to write into
+                    String result = overwriteCommand.execute(new String[]{output, filename});
+                    System.out.println(result);
                 } else {
-                    touchCommand.touch(parts[1]);
+                    System.out.println("Error: Incorrect format. Use 'echo <output> > <filename>'.");
                 }
-                break;
-            case "rm":
-                if (parts.length < 2) {
-                    System.out.println("Error: rm requires a file name.");
-                } else {
-                    rmCommand.delete(parts[1]);
-                }
-                break;
-            case "mv":
-                if (parts.length < 3) {
-                    System.out.println("Error: mv requires a source and a destination path.");
-                } else {
-                    try {
-                        mvCommand.move(parts[1], parts[2]);
-                    } catch (IOException e) {
-                        System.out.println("Error during move operation: " + e.getMessage());
-                    }
-                }
-                break;
-            case "cat":
-                handleCatCommand(parts);
-                break;
+            }
+            //======================== Append Command '>>' =======================
 
-            default:
-                System.out.println("Error: Command not recognized.");
+            else if (commandWithoutEcho.contains(" >> "))
+            {
+                String[] outputAndFile = commandWithoutEcho.split(" >> ", 2);
+                if (outputAndFile.length == 2) {
+                    String output = outputAndFile[0].trim();    // The text to append
+                    String filename = outputAndFile[1].trim();  // The filename to append into
+                    String result = appendCommand.execute(new String[]{output, filename});
+                    System.out.println(result);
+                } else {
+                    System.out.println("Error: Incorrect format. Use 'echo <output> >> <filename>'.");
+                }
+            }
+            else
+            {
+                System.out.println("Error: Command should include '>' or '>>' for file output.");
+            }
         }
-    }
+        //========================= Other Commands ==========================
+        else{
+            String[] parts = command.split(" ");
+            String mainCommand = parts[0].toLowerCase();
+
+            switch (mainCommand) {
+                case "help":
+                    displayHelp();
+                    break;
+                case "mkdir":
+                    if (parts.length < 2) {
+                        System.out.println("Error: mkdir requires a directory name.");
+                    } else {
+                        mkdirCommand.execute(parts[1]);
+                    }
+                    break;
+                case "rmdir":
+                    if (parts.length < 2) {
+                        System.out.println("Error: rmdir requires a directory name.");
+                    } else {
+                        rmdirCommand.execute(parts[1]);
+                    }
+                    break;
+
+                case "touch":
+                    if (parts.length < 2) {
+                        System.out.println("Error: touch requires a file name.");
+                    } else {
+                        touchCommand.touch(parts[1]);
+                    }
+                    break;
+                case "rm":
+                    if (parts.length < 2) {
+                        System.out.println("Error: rm requires a file name.");
+                    } else {
+                        rmCommand.delete(parts[1]);
+                    }
+                    break;
+                case "mv":
+                    if (parts.length < 3) {
+                        System.out.println("Error: mv requires a source and a destination path.");
+                    } else {
+                        try {
+                            mvCommand.move(parts[1], parts[2]);
+                        } catch (IOException e) {
+                            System.out.println("Error during move operation: " + e.getMessage());
+                        }
+                    }
+                    break;
+                case "cat":
+                    handleCatCommand(parts);
+                    break;
+
+                default:
+                    System.out.println("Error: Command not recognized.");
+            }
+        }
+        }
+
+
 
     // Method to display available commands
     private static void displayHelp() {
@@ -104,6 +148,8 @@ public class CLI {
                 + "If source and destination are in the same directory, it renames the file or directory.");
         System.out.println("cat <file1 name><file2 name> ... - If filenames are provided, it will display the content of those files.\n" +
                 "If no filenames are provided, it will accept input from the user and echo it back until the user enters Ctrl+D (EOF signal)..");
+        System.out.println("echo <output> > <filename>    - Overwriting a file.");
+        System.out.println("echo <output> >> <filename>   - Appending to a file.");
         System.out.println("exit            - Exit the CLI.");
     }
     // Method to handle the 'cat' command specifically
