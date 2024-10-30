@@ -9,6 +9,10 @@ public class MvCommand {
         Path source = Paths.get(sourcePath);
         Path destination = Paths.get(destinationPath);
 
+        // Debugging output
+        System.out.println("Trying to move from: " + source.toAbsolutePath());
+        System.out.println("To: " + destination.toAbsolutePath());
+
         // Ensure the source file or directory exists
         if (!Files.exists(source)) {
             throw new IOException("Source path does not exist: " + sourcePath);
@@ -18,14 +22,15 @@ public class MvCommand {
         if (Files.isDirectory(source) && Files.exists(destination) && !Files.isDirectory(destination)) {
             throw new IOException("Destination is not a directory: " + destinationPath);
         }
+
+        // Rename or move the file/directory
         if (source.getParent().equals(destination.getParent()) && !Files.isDirectory(source)) {
             Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
             System.out.println("Renamed " + source.getFileName() + " to " + destination.getFileName());
-        }
-        // Case 2: Move to different directory (possibly rename as well)
-        else {
+        } else {
             Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
             System.out.println("Moved " + source.getFileName() + " to " + destination);
         }
     }
+
 }

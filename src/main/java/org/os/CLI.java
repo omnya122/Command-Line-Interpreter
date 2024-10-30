@@ -1,5 +1,6 @@
 package org.os;
 import java.io.IOException;
+import java.util.List;
 
 import java.io.File;
 import java.util.Scanner;
@@ -17,6 +18,11 @@ public class CLI {
     private static CatCommand catCommand = new CatCommand();
     private static OverwriteCommand overwriteCommand = new OverwriteCommand();
     private static AppendCommand appendCommand = new AppendCommand();
+    private static PwdCommand pwdCommand = new PwdCommand();
+    private static CdCommand cdCommand = new CdCommand();
+    private static LsCommand lsCommand = new LsCommand();
+    private static LsRCommand lsRCommand = new LsRCommand();
+
 
     // Entry point
     public static void main(String[] args) {
@@ -127,6 +133,50 @@ public class CLI {
                 case "cat":
                     handleCatCommand(parts);
                     break;
+                case "cd":
+                    if (parts.length < 2) {
+                        System.out.println("Error: cd requires a directory path.");
+                    } else {
+                        cdCommand.changeDirectory(parts[1]);
+                    }
+                    break;
+
+                case "pwd":
+                    PwdCommand.printCurrentDirectory();
+                    break;
+
+
+
+                case "ls":
+                    if (parts.length == 1) {
+                        // No arguments, list current directory
+                        List<String> currentContents = LsCommand.list(); // Call the normal ls method
+                        if (!currentContents.isEmpty()) {
+                            String joinedContents = String.join(", ", currentContents);
+                            System.out.println("Contents of current directory: " + joinedContents);
+                        }
+                    } else if (parts.length == 2 && parts[1].equals("-r")) {
+                        // Handle recursive listing
+                        List<String> recursiveContents = LsRCommand.listRecursive(); // Call the recursive ls method
+                        if (!recursiveContents.isEmpty()) {
+                            String joinedContents = String.join(", ", recursiveContents);
+                            System.out.println("Contents of current directory (recursive): " + joinedContents);
+                        }
+                    } else {
+                        // Handle case with a directory argument
+                        String directoryName = parts[1];
+                        List<String> contents = LsCommand.list(directoryName);
+                        if (!contents.isEmpty()) {
+                            String joinedContents = String.join(", ", contents);
+                            System.out.println("Contents of " + directoryName + ": " + joinedContents);
+                        } else {
+                            System.out.println("No contents found or invalid directory.");
+                        }
+                    }
+                    break;
+
+
+
 
                 default:
                     System.out.println("Error: Command not recognized.");
@@ -141,6 +191,7 @@ public class CLI {
         System.out.println("Available commands:");
         System.out.println("help            - Show available commands.");
         System.out.println("mkdir <name>    - Create a new directory.");
+        System.out.println("mkdir <name>    - Create a new directory.");
         System.out.println("rmdir <name>    - Removes an empty existing directory.");
         System.out.println("touch <name>    - adds a new file if it doesnot exist and update  a file's timestamp if it exists.");
         System.out.println("rm <name>       - removes an existing file.");
@@ -150,7 +201,10 @@ public class CLI {
                 "If no filenames are provided, it will accept input from the user and echo it back until the user enters Ctrl+D (EOF signal)..");
         System.out.println("echo <output> > <filename>    - Overwriting a file.");
         System.out.println("echo <output> >> <filename>   - Appending to a file.");
-        System.out.println("exit            - Exit the CLI.");
+        System.out.println("cd <path>             - Change directory.");
+        System.out.println("pwd                   - Print current directory.");
+        System.out.println("ls [-r]               - List directory contents (recursively if '-r').");
+        System.out.println("exit                  - Exit the CLI.");
     }
     // Method to handle the 'cat' command specifically
     private static void handleCatCommand(String[] parts) {
