@@ -22,7 +22,8 @@ public class CLI {
     private static CdCommand cdCommand = new CdCommand();
     private static LsCommand lsCommand = new LsCommand();
     private static LsRCommand lsRCommand = new LsRCommand();
-
+    private static final PipeCommand pipeCommand = new PipeCommand();
+      private static EchoCommand echoCommand = new EchoCommand();
 
     // Entry point
     public static void main(String[] args) {
@@ -44,6 +45,15 @@ public class CLI {
 
     // Method to process the command
     private static void processCommand(String command) {
+        if (command.contains("|"))
+        {
+            String result = pipeCommand.execute(command);
+            if (!result.isEmpty())
+            {
+                System.out.println(result);
+            }
+            return;
+        }
         // Check if the command starts with 'echo '
         if (command.startsWith("echo "))
         {
@@ -184,8 +194,6 @@ public class CLI {
         }
         }
 
-
-
     // Method to display available commands
     private static void displayHelp() {
         System.out.println("Available commands:");
@@ -199,16 +207,19 @@ public class CLI {
                 + "If source and destination are in the same directory, it renames the file or directory.");
         System.out.println("cat <file1 name><file2 name> ... - If filenames are provided, it will display the content of those files.\n" +
                 "If no filenames are provided, it will accept input from the user and echo it back until the user enters Ctrl+D (EOF signal)..");
-        System.out.println("echo <output> > <filename>    - Overwriting a file.");
-        System.out.println("echo <output> >> <filename>   - Appending to a file.");
+        System.out.println("echo <output> > <filename>       - Overwrite a file with the specified output.");
+        System.out.println("echo <output> >> <filename>      - Append output to a file.");
+        System.out.println("command_1 | command_2 | ...      - Send the output of one command as input to the next in a chain.");
         System.out.println("cd <path>             - Change directory.");
         System.out.println("pwd                   - Print current directory.");
         System.out.println("ls [-r]               - List directory contents (recursively if '-r').");
         System.out.println("exit                  - Exit the CLI.");
     }
     // Method to handle the 'cat' command specifically
-    private static void handleCatCommand(String[] parts) {
-        if (parts.length == 1) {
+    private static void handleCatCommand(String[] parts)
+    {
+        if (parts.length == 1)
+        {
             // No file names provided, switch to user input mode
             catCommand.execute(new String[0]);
         } else {
