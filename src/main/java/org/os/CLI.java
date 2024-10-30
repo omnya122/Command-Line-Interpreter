@@ -5,21 +5,22 @@ import org.os.commands.*;
 
 public class CLI
 {
-    private static final Scanner scanner = new Scanner(System.in);
-    private static final MkdirCommand mkdirCommand = new MkdirCommand();
-    private static final RmdirCommand rmdirCommand = new RmdirCommand();
-    private static final TouchCommand touchCommand = new TouchCommand();
-    private  static final RmCommand rmCommand = new RmCommand();
-    private static final MvCommand mvCommand = new MvCommand();
-    private static final CatCommand catCommand = new CatCommand();
+    private static final Scanner   scanner                 = new Scanner(System.in);
+    private static final RmCommand rmCommand               = new RmCommand();
+    private static final MvCommand mvCommand               = new MvCommand();
+    private static final CatCommand catCommand             = new CatCommand();
+    private static final PipeCommand pipeCommand           = new PipeCommand();
+    private static final EchoCommand echoCommand           = new EchoCommand();
+    private static final MkdirCommand mkdirCommand         = new MkdirCommand();
+    private static final RmdirCommand rmdirCommand         = new RmdirCommand();
+    private static final TouchCommand touchCommand         = new TouchCommand();
+    private static final AppendCommand appendCommand       = new AppendCommand();
     private static final OverwriteCommand overwriteCommand = new OverwriteCommand();
-    private static final AppendCommand appendCommand = new AppendCommand();
-    private static final PipeCommand pipeCommand = new PipeCommand();
-//  private static EchoCommand echoCommand = new EchoCommand();
 
+    public static String currentDirectory = System.getProperty("user.dir");
 
-
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         System.out.println("Welcome to the CLI! If you want to see available commands, type 'help'.");
 
         // Infinite loop to process commands until 'exit' is entered
@@ -49,15 +50,15 @@ public class CLI
         }
         if (command.startsWith("echo "))
         {
-            String commandWithoutEcho = command.substring(5).trim();
-            if (commandWithoutEcho.contains(" > "))
+            String echoText = command.substring(5).trim();
+            if (echoText.contains(" > "))
             {
-                String[] outputAndFile = commandWithoutEcho.split(" > ", 2);
+                String[] outputAndFile = echoText.split(" > ", 2);
                 if (outputAndFile.length == 2)
                 {
-                    String output = outputAndFile[0].trim();    // The text to write
-                    String filename = outputAndFile[1].trim();  // The filename to write into
-                    String result = overwriteCommand.execute(new String[]{output, filename});
+                    String output = outputAndFile[0].trim();
+                    String filename = outputAndFile[1].trim();
+                    String result = overwriteCommand.execute(new String[]{output, filename}, currentDirectory);
                     System.out.println(result);
                 }
                 else
@@ -65,13 +66,14 @@ public class CLI
                     System.out.println("Error: Incorrect format. Use 'echo <output> > <filename>'.");
                 }
             }
-            else if (commandWithoutEcho.contains(" >> "))
+            else if (echoText.contains(" >> "))
             {
-                String[] outputAndFile = commandWithoutEcho.split(" >> ", 2);
-                if (outputAndFile.length == 2) {
-                    String output = outputAndFile[0].trim();    // The text to append
-                    String filename = outputAndFile[1].trim();  // The filename to append into
-                    String result = appendCommand.execute(new String[]{output, filename});
+                String[] outputAndFile = echoText.split(" >> ", 2);
+                if (outputAndFile.length == 2)
+                {
+                    String output = outputAndFile[0].trim();
+                    String filename = outputAndFile[1].trim();
+                    String result = appendCommand.execute(new String[]{output, filename}, currentDirectory);
                     System.out.println(result);
                 }
                 else
@@ -81,10 +83,10 @@ public class CLI
             }
             else
             {
-                System.out.println(commandWithoutEcho);
+                    String result = echoCommand.execute(echoText);
+                    System.out.println(result);
             }
         }
-        //========================= Other Commands ==========================
         else
         {
             String[] parts = command.split(" ");

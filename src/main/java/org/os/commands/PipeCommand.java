@@ -14,7 +14,8 @@ public class PipeCommand {
     private static final OverwriteCommand overwriteCommand = new OverwriteCommand();
 
 
-    public String execute(String commandLine) {
+    public String execute(String commandLine)
+    {
         String[] commands = commandLine.split("\\|");
         String input = "";
 
@@ -30,7 +31,8 @@ public class PipeCommand {
         return input;
     }
 
-    private String executeSingleCommand(String command) {
+    private String executeSingleCommand(String command)
+    {
         if (command.startsWith("mkdir "))
         {
             String dirName = command.substring(6).trim();
@@ -72,9 +74,9 @@ public class PipeCommand {
         {
             String[] parts = command.split(">>");
             if (parts.length == 2) {
-                String output = parts[0].trim().replace("echo ", ""); // Remove "echo" and extra spaces
+                String output = parts[0].trim().replace("echo ", "");
                 String filename = parts[1].trim();
-                return appendCommand.execute(new String[]{output, filename});
+                return appendCommand.execute(new String[]{output, filename}, currentDirectory);
             } else {
                 return "Error: Invalid append syntax.";
             }
@@ -84,9 +86,9 @@ public class PipeCommand {
             String[] parts = command.split(">");
             if (parts.length == 2)
             {
-                String output = parts[0].trim().replace("echo ", ""); // Remove "echo" and extra spaces
+                String output = parts[0].trim().replace("echo ", "");
                 String filename = parts[1].trim();
-                return overwriteCommand.execute(new String[]{output, filename});
+                return overwriteCommand.execute(new String[]{output, filename}, currentDirectory);
             }
             else
             {

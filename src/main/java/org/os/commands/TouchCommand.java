@@ -12,14 +12,15 @@ public class TouchCommand {
 
             // Check if the file already exists
             if (file.exists()) {
-                if (file.isDirectory()) {
+                if (file.isDirectory())
+                {
                     System.out.println("Error: Cannot update timestamp of a directory.");
-                } else {
+                }
+                else
+                {
                     // If it exists, update its timestamp
                     Files.setLastModifiedTime(Paths.get(filename), java.nio.file.attribute.FileTime.fromMillis(System.currentTimeMillis()));
                 }
-
-
             } else {
                 // If it does not exist, create a new empty file
                 file.createNewFile();

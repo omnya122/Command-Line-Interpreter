@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.os.CLI.currentDirectory;
 
 public class PipeCommandTest {
 
@@ -14,6 +16,41 @@ public class PipeCommandTest {
     @BeforeEach
     public void setUp() {
         pipeCommand = new PipeCommand();
+    }
+    @AfterEach
+    public void tearDown() {
+        // Clean up any created files or directories after each test
+        cleanUp("testDir");
+        cleanUp("testDir2");
+        cleanUp("newFile.txt");
+        cleanUp("testFile.txt");
+        cleanUp("testDirectory");
+        cleanUp("Testing.txt");
+    }
+
+    private void cleanUp(String name) {
+        File file = new File(name);
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                deleteDirectory(file);
+            } else {
+                file.delete();
+            }
+        }
+    }
+
+    private void deleteDirectory(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        directory.delete();
     }
 
     @Test
@@ -74,7 +111,6 @@ public class PipeCommandTest {
 
     @Test
     public void testAppendAndCatCommands() throws IOException {
-        // Define the file name and expected content
         String fileName = "testFile.txt";
         String initialContent = "First line";
         String appendedContent = "Second line";
@@ -104,6 +140,41 @@ public class PipeCommandTest {
 
         // Clean up
         new File(fileName).delete();
+    }
+    @Test
+    public void testMkdirCdTouchEchoAppend() throws IOException {
+        // mkdir dirName | cd dirName | touch testing.txt | echo testPiping >> outfile.txt
+        String testDirectoryName = "testDir2";
+        String commandLine = "mkdir " + testDirectoryName + " | cd " + testDirectoryName + " | touch Testing.txt | echo testPiping >> Testing.txt";
+        String result = pipeCommand.execute(commandLine);
+
+        File file = new File(testDirectoryName + "/Testing.txt");
+
+        assertTrue(file.exists(), "File '" + testDirectoryName + "/Testing.txt' should exist");
+
+        String fileContent = pipeCommand.execute("cat " + testDirectoryName + "/Testing.txt");
+        assertEquals("testPiping", fileContent.trim(), "The content of 'Testing.txt' should match the appended text 'testPiping'");
+
+        new File(testDirectoryName + "/Testing.txt").delete();
+        new File(testDirectoryName).delete();
+    }
+
+    @Test
+    public void testMkdirCdTouchEchoOverwrite() throws IOException
+    {
+        String dirName = "testDir";
+        String fileName = "Test.txt";
+        String commandLine = "mkdir " + dirName + " | cd " + dirName + " | touch " + fileName + " | echo overwrite > " + fileName;
+        pipeCommand.execute(commandLine);
+
+        File file = new File(currentDirectory + "/" + dirName + "/" + fileName);
+        assertTrue(file.exists(), "File '" + dirName + "/" + fileName + "' should exist");
+
+        String fileContent = Files.readString(file.toPath()).trim();
+        assertEquals("overwrite", fileContent, "The content of '" + fileName + "' should match the written text 'overwrite'");
+
+        file.delete();
+        new File(currentDirectory + "/" + dirName).delete();
     }
 }
 
