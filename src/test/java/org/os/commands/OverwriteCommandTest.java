@@ -22,13 +22,6 @@ public class OverwriteCommandTest {
         String content = Files.readString(Path.of(filename));
         assertEquals("overwrite", content);
     }
-//    @Test
-//    public void TestInvalidArg(){
-//        // Test if invalid command was written to the console
-//        OverwriteCommand cmd = new OverwriteCommand();
-//        String result = cmd.execute(new String[]{});
-//        assertEquals("Command should be: > <output> <filename>", result);
-//    }
 
     @AfterEach
     public void CleanUp() throws Exception{

@@ -8,10 +8,11 @@ public class OverwriteCommand {
         String filename = args[1]; // file to write into
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write(output);
-            return "file " + filename + " Overwritten Successfully!";
+            System.out.println("file " + filename + " Overwritten Successfully!");
         }
         catch (IOException exception){
             return "Error Writing to file: " + exception.getMessage();
         }
+        return "";
     }
 }

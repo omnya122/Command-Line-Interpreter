@@ -14,10 +14,11 @@ public class AppendCommand {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
             writer.write(output);
-            writer.newLine();  // Add a new line after appending
-            return "Appended to " + filename + " successfully.";
+            writer.newLine();
+            System.out.println("Appended to " + filename + " successfully.");
         } catch (IOException e) {
             return "Error: Unable to write to " + filename + ". " + e.getMessage();
         }
+        return "";
     }
 }
