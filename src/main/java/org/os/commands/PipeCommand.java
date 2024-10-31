@@ -5,15 +5,19 @@ import java.util.List;
 import static org.os.CLI.currentDirectory;
 public class PipeCommand {
 
-    private static String currentDirectory = System.getProperty("user.dir");
-    private static final MkdirCommand mkdirCommand = new MkdirCommand();
-    private static final RmdirCommand rmdirCommand = new RmdirCommand();
-    private static final TouchCommand touchCommand = new TouchCommand();
-    private static final CatCommand catCommand = new CatCommand();
-    private static final AppendCommand appendCommand = new AppendCommand();
-    private static final EchoCommand echoCommand = new EchoCommand();
-    private static final OverwriteCommand overwriteCommand = new OverwriteCommand();
-    private static final LsCommand lsCommand = new LsCommand();
+    private static String currentDirectory                  = System.getProperty("user.dir");
+
+    private static final MkdirCommand mkdirCommand          = new MkdirCommand();
+    private static final RmdirCommand rmdirCommand          = new RmdirCommand();
+    private static final TouchCommand touchCommand          = new TouchCommand();
+    private static final CatCommand catCommand              = new CatCommand();
+    private static final AppendCommand appendCommand        = new AppendCommand();
+    private static final EchoCommand echoCommand            = new EchoCommand();
+    private static final RmCommand rmCommand                = new RmCommand();
+    private static final OverwriteCommand overwriteCommand  = new OverwriteCommand();
+    private static final LsCommand lsCommand                = new LsCommand();
+
+
 
     public String execute(String commandLine)
     {
@@ -68,6 +72,11 @@ public class PipeCommand {
             String dirPath = command.length() > 3 ? command.substring(3).trim() : currentDirectory;
             List<String> files = dirPath.isEmpty() ? LsCommand.list() : LsCommand.list(dirPath);
             return String.join("\n", files);  // Join list items with newlines
+        }
+        else if (command.startsWith("rm ")) {
+            String filename = command.substring(3).trim();
+            boolean isDeleted = rmCommand.delete(currentDirectory + "/" + filename);
+            return isDeleted ? "File deleted successfully." : "Failed to delete the file.";
         }
         else if (command.contains(">>"))
         {

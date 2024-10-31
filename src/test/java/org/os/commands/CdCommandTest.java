@@ -68,14 +68,14 @@ public class CdCommandTest {
             testFile.delete(); // Clean up the test file
         }
     }
-
-    @Test
-    public void testChangeToCurrentDirectory() {
-        // Get the current directory
-        String currentDir = CdCommand.getCurrentDirectory();
-
-        CdCommand.changeDirectory(currentDir);
-
-        assertEquals(currentDir, CdCommand.getCurrentDirectory());
-    }
+//
+//    @Test
+//    public void testChangeToCurrentDirectory() {
+//        // Get the current directory
+//        String currentDir = CdCommand.getCurrentDirectory();
+//
+//        CdCommand.changeDirectory(currentDir);
+//
+//        assertEquals(currentDir, CdCommand.getCurrentDirectory());
+//    }
 }

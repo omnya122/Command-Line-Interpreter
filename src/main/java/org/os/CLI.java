@@ -24,7 +24,13 @@ public class CLI {
     private static LsRCommand lsRCommand                   = new LsRCommand();
 
     public static String currentDirectory                  = System.getProperty("user.dir");
+    public static String getCurrentDirectory() {
+        return currentDirectory;
+    }
 
+    public static void setCurrentDirectory(String directory) {
+        currentDirectory = directory;
+    }
     // Entry point
     public static void main(String[] args)
     {
@@ -185,7 +191,6 @@ public class CLI {
                 case "ls":
                     if (parts.length == 1)
                     {
-                        // No arguments, list current directory
                         List<String> currentContents = LsCommand.list(); // Call the normal ls method
                         if (!currentContents.isEmpty())
                         {
@@ -250,18 +255,20 @@ public class CLI {
         System.out.println("exit                             - Exit the CLI.");
     }
 
-    // Method to handle the 'cat' command specifically
-    private static void handleCatCommand(String[] parts)
+ // Method to handle the 'cat' command specifically
+    private static void handleCatCommand(String[] parts) {
+    String result;
+    if (parts.length == 1) {
+        result = catCommand.execute(new String[0]);
+    } else
     {
-        if (parts.length == 1)
-        {
-            catCommand.execute(new String[0]);
-        }
-        else
-        {
-            String[] filenames = new String[parts.length - 1];
-            System.arraycopy(parts, 1, filenames, 0, parts.length - 1);
-            catCommand.execute(filenames);
-        }
+        String[] filenames = new String[parts.length - 1];
+        System.arraycopy(parts, 1, filenames, 0, parts.length - 1);
+        result = catCommand.execute(filenames);
     }
+    if (!result.isEmpty()) {
+        System.out.println(result);
+    }
+}
+
 }
