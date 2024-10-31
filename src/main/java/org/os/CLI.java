@@ -264,28 +264,4 @@ public class CLI {
             catCommand.execute(filenames);
         }
     }
-
-    public static LsCommand getLsCommand() {
-        return lsCommand;
-    }
-
-    public static void setLsCommand(LsCommand lsCommand) {
-        CLI.lsCommand = lsCommand;
-    }
-
-    public static PwdCommand getPwdCommand() {
-        return pwdCommand;
-    }
-
-    public static void setPwdCommand(PwdCommand pwdCommand) {
-        CLI.pwdCommand = pwdCommand;
-    }
-
-    public static LsRCommand getLsRCommand() {
-        return lsRCommand;
-    }
-
-    public static void setLsRCommand(LsRCommand lsRCommand) {
-        CLI.lsRCommand = lsRCommand;
-    }
 }
