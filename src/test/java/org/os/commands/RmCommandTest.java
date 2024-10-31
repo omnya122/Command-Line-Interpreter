@@ -17,41 +17,37 @@ class RmCommandTest {
 
     @Test
     void testDeleteFile() throws IOException {
-        // Arrange: Create a temporary file
-        Path tempFile = Files.createTempFile("testFile", ".txt");
 
-        // Act: Attempt to delete the file
+        Path tempFile = Files.createTempFile("testFile", ".txt");
         boolean isDeleted = rmCommand.delete(tempFile.toString());
 
-        // Assert: Check if the file was deleted
+        // Check if the file was deleted
         assertTrue(isDeleted, "The file should be deleted.");
         assertFalse(Files.exists(tempFile), "The file should no longer exist.");
     }
 
     @Test
     void testDeleteDirectoryWithoutRecursive() throws IOException {
-        // Arrange: Create a temporary directory
         Path tempDir = Files.createTempDirectory("testDir");
 
-        // Act: Attempt to delete the directory without recursive deletion
+        // Attempt to delete the directory without recursive deletion
         boolean isDeleted = rmCommand.delete(tempDir.toString());
 
-        // Assert: Check if the directory was deleted
+        // Check if the directory was deleted
         assertTrue(isDeleted, "The directory should be deleted without needing a recursive flag.");
         assertFalse(Files.exists(tempDir), "The directory should no longer exist.");
     }
 
     @Test
     void testDeleteDirectoryWithRecursive() throws IOException {
-        // Arrange: Create a temporary directory with subdirectories and files
         Path tempDir = Files.createTempDirectory("testDir");
         Path subDir = Files.createDirectory(tempDir.resolve("subDir"));
         Path tempFile = Files.createFile(subDir.resolve("testFile.txt"));
 
-        // Act: Attempt to delete the directory recursively
+        // Attempt to delete the directory recursively
         boolean isDeleted = rmCommand.delete(tempDir.toString());
 
-        // Assert: Check if the directory and contents were deleted
+        // Check if the directory and contents were deleted
         assertTrue(isDeleted, "The directory and contents should be deleted with recursive deletion.");
         assertFalse(Files.exists(tempDir), "The directory should no longer exist.");
     }

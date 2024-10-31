@@ -8,16 +8,13 @@ import java.util.stream.Collectors;
 
 public class LsCommand {
 
-    // Method to list files in the current directory
     public static List<String> list() {
         File currentDirectory = new File(System.getProperty("user.dir"));
 
-        // Check if directory is accessible
         if (!currentDirectory.exists() || !currentDirectory.isDirectory()) {
             throw new IllegalStateException("Current directory is not accessible.");
         }
 
-        // Get list of files and handle empty directory
         File[] files = currentDirectory.listFiles();
         if (files == null || files.length == 0) {
             System.out.println("Directory is empty.");
@@ -33,13 +30,11 @@ public class LsCommand {
     public static List<String> list(String directoryPath) {
         File directory = new File(directoryPath);
 
-        // Check if the directory exists and is accessible
         if (!directory.exists() || !directory.isDirectory()) {
             System.out.println("Error: The specified path does not exist or is not a directory.");
             return new ArrayList<>(); // Return an empty list if invalid
         }
 
-        // Get list of files and handle empty directory
         File[] files = directory.listFiles();
         if (files == null || files.length == 0) {
             System.out.println("Directory is empty.");

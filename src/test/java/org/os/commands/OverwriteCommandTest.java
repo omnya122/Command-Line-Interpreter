@@ -3,29 +3,24 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import static org.os.CLI.currentDirectory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class OverwriteCommandTest {
-    private String filename = "fileTest.txt"; // file to use in tests
-
+    private final String filename = "fileTest.txt";
     @Test
-    public void TestOverwriteFile() throws Exception{
+    public void TestOverwriteFile() throws Exception {
         String[] args = {"overwrite", filename};
         OverwriteCommand cmd = new OverwriteCommand();
-
-        // Execute the command and overwriting into the file name
-        String result = cmd.execute(args);
+        String result = cmd.execute(args, currentDirectory);
         assertEquals("file " + filename + " Overwritten Successfully!", result);
-
-        // reads the content of the file after executing the command and make sure it's correct
-        String content = Files.readString(Path.of(filename));
+        String content = Files.readString(Path.of(currentDirectory, filename));
         assertEquals("overwrite", content);
     }
 
     @AfterEach
     public void CleanUp() throws Exception{
-        // Log whether the file exists before attempting to delete it
         Path filePath = Path.of(filename);
         if (Files.exists(filePath)) {
             System.out.println("Deleting file: " + filename);

@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.os.CLI.currentDirectory;
 
 public class AppendCommandTest {
 
@@ -20,7 +21,7 @@ public class AppendCommandTest {
     public void setUp() {
         appendCommand = new AppendCommand();
         testFile = "test.txt";
-        // Ensure the file is clean before tests
+
         try {
             Files.deleteIfExists(Paths.get(testFile));
             Files.createFile(Paths.get(testFile));
@@ -41,7 +42,7 @@ public class AppendCommandTest {
     @Test
     public void testAppendCommand() {
         String output = "Hello, World!";
-        String result = appendCommand.execute(new String[]{output, testFile});
+        String result = appendCommand.execute(new String[]{output, testFile}, currentDirectory);
         assertEquals("Appended to test.txt successfully.", result);
 
         try {

@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.os.CLI.currentDirectory;
 
 public class PipeCommandTest {
 
@@ -14,6 +16,42 @@ public class PipeCommandTest {
     @BeforeEach
     public void setUp() {
         pipeCommand = new PipeCommand();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        // Clean up any created files or directories after each test
+        cleanUp("testDir");
+        cleanUp("testDir2");
+        cleanUp("newFile.txt");
+        cleanUp("testFile.txt");
+        cleanUp("testDirectory");
+        cleanUp("Testing.txt");
+    }
+
+    private void cleanUp(String name) {
+        File file = new File(name);
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                deleteDirectory(file);
+            } else {
+                file.delete();
+            }
+        }
+    }
+
+    private void deleteDirectory(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        directory.delete();
     }
 
     @Test
@@ -37,6 +75,7 @@ public class PipeCommandTest {
         assertEquals("", result);
         assertTrue(new File("newFile.txt").exists());
     }
+
     @Test
     public void testMkdirAndRmdir() {
         String commandLine = "mkdir tempDir | rmdir tempDir";
@@ -58,6 +97,7 @@ public class PipeCommandTest {
         System.out.println("File path: " + file.getAbsolutePath());
         System.out.println("Current working directory: " + System.getProperty("user.dir"));
     }
+
     @Test
     public void testMkdirCDTouch() throws IOException {
         String commandLine = "mkdir testDirectory | cd testDirectory | touch TestTest.txt";
@@ -74,7 +114,6 @@ public class PipeCommandTest {
 
     @Test
     public void testAppendAndCatCommands() throws IOException {
-        // Define the file name and expected content
         String fileName = "testFile.txt";
         String initialContent = "First line";
         String appendedContent = "Second line";
@@ -105,5 +144,75 @@ public class PipeCommandTest {
         // Clean up
         new File(fileName).delete();
     }
-}
 
+    @Test
+    public void testMkdirCdTouchEchoAppend() throws IOException {
+        String testDirectoryName = "testDir2";
+        String commandLine = "mkdir " + testDirectoryName + " | cd " + testDirectoryName + " | touch Testing.txt | echo testPiping >> Testing.txt";
+        String result = pipeCommand.execute(commandLine);
+
+        File file = new File(testDirectoryName + "/Testing.txt");
+
+        assertTrue(file.exists(), "File '" + testDirectoryName + "/Testing.txt' should exist");
+
+        String fileContent = pipeCommand.execute("cat " + testDirectoryName + "/Testing.txt");
+        assertEquals("testPiping", fileContent.trim(), "The content of 'Testing.txt' should match the appended text 'testPiping'");
+
+        new File(testDirectoryName + "/Testing.txt").delete();
+        new File(testDirectoryName).delete();
+    }
+
+    @Test
+    public void testMkdirCdTouchEchoOverwrite() throws IOException {
+        String dirName = "testDir";
+        String fileName = "Test.txt";
+        String commandLine = "mkdir " + dirName + " | cd " + dirName + " | touch " + fileName + " | echo overwrite > " + fileName;
+        pipeCommand.execute(commandLine);
+        File file = new File(currentDirectory + "/" + fileName);
+        assertTrue(file.exists(), "File '" + dirName + "/" + fileName + "' should exist");
+
+        String fileContent = Files.readString(file.toPath()).trim();
+        assertEquals("overwrite", fileContent, "The content of '" + fileName + "' should match the written text 'overwrite'");
+
+        file.delete();
+        new File(currentDirectory + "/" + dirName).delete();
+    }
+
+    @Test
+    public void testCdPipeLs() throws IOException {
+        String directoryName = "testDir";
+        String file1 = "file1.txt";
+        String file2 = "file2.txt";
+        File testDir = new File(directoryName);
+        testDir.mkdir();
+        Files.writeString(new File(testDir, file1).toPath(), "Content of file1");
+        Files.writeString(new File(testDir, file2).toPath(), "Content of file2");
+
+        String commandLine = "cd " + directoryName + " | ls";
+        String result = pipeCommand.execute(commandLine);
+        assertTrue(result.contains(file1), "The output should contain the name of file1.");
+        assertTrue(result.contains(file2), "The output should contain the name of file2.");
+
+        // Clean up
+        Files.deleteIfExists(new File(testDir, file1).toPath());
+        Files.deleteIfExists(new File(testDir, file2).toPath());
+        testDir.delete();
+    }
+    @Test
+    public void testCdWithPipe() throws IOException {
+        String testDirName = "testDir";
+        String testFileName = "testFile.txt";
+
+        new File(testDirName).mkdir();
+
+        String commandLine = "cd " + testDirName + " | touch " + testFileName;
+
+        String result = pipeCommand.execute(commandLine);
+        File createdFile = new File(testDirName, testFileName);
+        assertTrue(createdFile.exists(), "File '" + testDirName + "/" + testFileName + "' should exist");
+
+        // Clean up
+        createdFile.delete();
+        new File(testDirName).delete();
+    }
+}

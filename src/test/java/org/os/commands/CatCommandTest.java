@@ -1,14 +1,9 @@
 package org.os.commands;
 
 import org.junit.jupiter.api.*;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class CatCommandTest {
@@ -18,7 +13,7 @@ class CatCommandTest {
 
     @BeforeEach
     void setUp() {
-        System.setOut(new PrintStream(outContent)); // Redirects standard output for testing
+        System.setOut(new PrintStream(outContent));
     }
 
     @AfterEach
@@ -29,13 +24,10 @@ class CatCommandTest {
 
     @Test
     void testCatNonFileInput() throws IOException {
-        // Arrange
         Path tempDir = Files.createTempDirectory("testDir");
 
-        // Act
         catCommand.execute(new String[]{tempDir.toString()});
 
-        // Assert
         assertTrue(outContent.toString().contains("Error: '" + tempDir.toString() + "' is not a file."));
 
         // Clean up
@@ -44,45 +36,47 @@ class CatCommandTest {
 
     @Test
     void testCatFileNotFound() {
-        // Arrange
         String nonexistentFile = "nonexistent.txt";
 
-        // Act
         catCommand.execute(new String[]{nonexistentFile});
 
-        // Assert
         assertTrue(outContent.toString().contains("Error: File '" + nonexistentFile + "' does not exist."));
     }
 
     @Test
     void testCatFileContent() throws IOException {
-        // Arrange
-        Path tempFile = Files.createTempFile("testFile", ".txt");
+        File file = new File("testFile.txt");
         String fileContent = "Hello, this is a test file!\nSecond line of the file.";
-        Files.write(tempFile, fileContent.getBytes(), StandardOpenOption.WRITE);
 
-        // Act
-        catCommand.execute(new String[]{tempFile.toString()});
+        try {
+            if (file.createNewFile()) {
+                System.out.println("File created: " + file.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(fileContent);
+                System.out.println("Successfully wrote to the file.");
+            }
+        } catch (IOException e) {
+            System.err.println("An error occurred: " + e.getMessage());
+        }
+        String res = catCommand.execute(new String[]{"testFile.txt"});
 
-        // Normalize line separators for comparison
-        String expectedOutput = fileContent.replace("\r\n", "\n") + "\n";
-        String actualOutput = outContent.toString().replace("\r\n", "\n");
+        String actualOutput = res.replace("\r\n", "\n");
 
-        // Assert
-        assertEquals(expectedOutput, actualOutput);
+        assertEquals(fileContent, res);
 
         // Clean up
-        Files.deleteIfExists(tempFile);
+        file.delete();
     }
 
     @Test
     void testCatEmptyFile() throws IOException {
         Path tempFile = Files.createTempFile("emptyFile", ".txt");
 
-        // Act
         catCommand.execute(new String[]{tempFile.toString()});
 
-        // Assert
         assertEquals("", outContent.toString()); // Expected output is empty
 
         // Clean up

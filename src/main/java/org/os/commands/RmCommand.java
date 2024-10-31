@@ -1,12 +1,12 @@
 package org.os.commands;
 import java.io.File;
 import java.util.Scanner;
+
 public class RmCommand {
     private Scanner scanner = new Scanner(System.in);
     public boolean delete(String path) {
         File file = new File(path);
 
-        // Check if the file exists before attempting to delete
         while (!file.exists()) {
             System.out.println("Please enter a valid existing file name.");
             System.out.print("Enter filename: ");
@@ -17,7 +17,6 @@ public class RmCommand {
 
         boolean isDeleted = deleteRecursively(file);
 
-        // Provide feedback to the user
         if (isDeleted) {
             System.out.println("File deleted successfully.");
         } else {
@@ -34,6 +33,6 @@ public class RmCommand {
                 deleteRecursively(child);  // Recursively delete contents
             }
         }
-        return file.delete();  // Delete file or empty directory
+        return file.delete();
     }
 }

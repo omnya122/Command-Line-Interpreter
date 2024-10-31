@@ -1,10 +1,11 @@
 package org.os.commands;
 
 import java.io.File;
-
+import java.util.List;
+import static org.os.CLI.currentDirectory;
 public class PipeCommand {
 
-    private String currentDirectory = System.getProperty("user.dir");
+    private static String currentDirectory = System.getProperty("user.dir");
     private static final MkdirCommand mkdirCommand = new MkdirCommand();
     private static final RmdirCommand rmdirCommand = new RmdirCommand();
     private static final TouchCommand touchCommand = new TouchCommand();
@@ -12,9 +13,10 @@ public class PipeCommand {
     private static final AppendCommand appendCommand = new AppendCommand();
     private static final EchoCommand echoCommand = new EchoCommand();
     private static final OverwriteCommand overwriteCommand = new OverwriteCommand();
+    private static final LsCommand lsCommand = new LsCommand();
 
-
-    public String execute(String commandLine) {
+    public String execute(String commandLine)
+    {
         String[] commands = commandLine.split("\\|");
         String input = "";
 
@@ -30,7 +32,8 @@ public class PipeCommand {
         return input;
     }
 
-    private String executeSingleCommand(String command) {
+    private String executeSingleCommand(String command)
+    {
         if (command.startsWith("mkdir "))
         {
             String dirName = command.substring(6).trim();
@@ -54,27 +57,25 @@ public class PipeCommand {
             String[] filenames = command.substring(4).trim().split(" ");
             return catCommand.execute(filenames);
         }
-        else if (command.startsWith("cd "))
-        {
-            String dirName = command.substring(3).trim();
-            File dir = new File(currentDirectory, dirName);
-            if (dir.exists() && dir.isDirectory())
-            {
-                currentDirectory = dir.getAbsolutePath();
-                return "";
-            }
-            else
-            {
-                return "Error: Directory not found.";
-            }
+        else if (command.startsWith("cd ")) {
+            String dirName = command.substring(3).trim(); // Extract the directory name
+            CdCommand.changeDirectory(currentDirectory + "/" + dirName); // Change the directory using CdCommand
+            currentDirectory = CdCommand.getCurrentDirectory(); // Update the current directory variable
+            return ""; // Return an empty string as cd doesn't produce output
+        }
+
+        else if (command.startsWith("ls")) {
+            String dirPath = command.length() > 3 ? command.substring(3).trim() : currentDirectory;
+            List<String> files = dirPath.isEmpty() ? LsCommand.list() : LsCommand.list(dirPath);
+            return String.join("\n", files);  // Join list items with newlines
         }
         else if (command.contains(">>"))
         {
             String[] parts = command.split(">>");
             if (parts.length == 2) {
-                String output = parts[0].trim().replace("echo ", ""); // Remove "echo" and extra spaces
+                String output = parts[0].trim().replace("echo ", "");
                 String filename = parts[1].trim();
-                return appendCommand.execute(new String[]{output, filename});
+                return appendCommand.execute(new String[]{output, filename}, currentDirectory);
             } else {
                 return "Error: Invalid append syntax.";
             }
@@ -84,9 +85,9 @@ public class PipeCommand {
             String[] parts = command.split(">");
             if (parts.length == 2)
             {
-                String output = parts[0].trim().replace("echo ", ""); // Remove "echo" and extra spaces
+                String output = parts[0].trim().replace("echo ", "");
                 String filename = parts[1].trim();
-                return overwriteCommand.execute(new String[]{output, filename});
+                return overwriteCommand.execute(new String[]{output, filename}, currentDirectory);
             }
             else
             {
